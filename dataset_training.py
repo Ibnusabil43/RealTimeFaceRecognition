@@ -41,8 +41,6 @@ def trainRecognizer(start, end, faces, ids):
     # Melatih recognizer dengan data gambar dan label
     recognizer.train(faces[start:end], np.array(ids[start:end]))
 
-    
-
 # Fungsi utama
 def main():
     # Jumlah thread yang akan digunakan

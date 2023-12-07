@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import os
-import threading
 
 # Membuat recognizer dan membaca model yang telah dilatih
 recognizer = cv2.face.LBPHFaceRecognizer_create()
@@ -12,7 +11,6 @@ faceCascade = cv2.CascadeClassifier(cascadePath)
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # Inisialisasi variabel
-id = 0
 names = ['None', 'Yanto', 'Rio Jawir', 'Ilza', 'Z', 'W']  # Nama yang terkait dengan ID
 
 # Inisialisasi dan mulai capture video secara real-time
@@ -39,17 +37,14 @@ def read_and_display():
         for (x, y, w, h) in faces:
             cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-            id, confidence = recognizer.predict(gray[y:y+h, x:x+w])
+            id, _ = recognizer.predict(gray[y:y+h, x:x+w])
 
-            if confidence < 100:
-                id = names[id]
-                confidence = "  {0}%".format(round(100 - confidence))
+            if 0 <= id < len(names):  # Ensure the id is within the valid range
+                name = names[id]
             else:
-                id = "unknown"
-                confidence = "  {0}%".format(round(100 - confidence))
+                name = "unknown"
 
-            cv2.putText(img, str(id), (x+5, y-5), font, 1, (255, 255, 255), 2)
-            cv2.putText(img, str(confidence), (x+5, y+h-5), font, 1, (255, 255, 0), 1)
+            cv2.putText(img, str(name), (x+5, y-5), font, 1, (255, 255, 255), 2)
 
         cv2.imshow('camera', img)
 
@@ -58,13 +53,7 @@ def read_and_display():
             break
 
 # Membuat thread untuk fungsi read_and_display
-thread_display = threading.Thread(target=read_and_display)
-
-# Memulai thread
-thread_display.start()
-
-# Menunggu thread_display selesai
-thread_display.join()
+read_and_display()
 
 # Menutup program dan membersihkan
 print("\n [INFO] Menutup program dan membersihkan")

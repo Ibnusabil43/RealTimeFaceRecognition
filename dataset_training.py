@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import os
+import threading
 
 # Path untuk database gambar wajah
 path = 'D:\COOLYEAH CERIYA CERIYA\SEMESTER 5\SISTEM PARALEL TERDISTRIBUSI\FaceDetector Project\dataset'
@@ -33,16 +34,56 @@ def getImagesAndLabels(path):
 
     return faceSamples, ids
 
-print("\n [INFO] Melatih wajah. Ini akan memakan waktu beberapa detik. Tunggu ...")
+# Fungsi untuk melatih recognizer
+def trainRecognizer(start, end, faces, ids):
+    print("\n [INFO] Melatih wajah dari dataset {0} hingga {1}. Tunggu ...".format(start, end))
 
-# Mendapatkan data gambar dan label
-faces, ids = getImagesAndLabels(path)
+    # Melatih recognizer dengan data gambar dan label
+    recognizer.train(faces[start:end], np.array(ids[start:end]))
 
-# Melatih recognizer dengan data gambar dan label
-recognizer.train(faces, np.array(ids))
+    
 
-# Menyimpan model ke dalam file trainer/trainer.yml
-recognizer.write('trainer/trainer.yml')
+# Fungsi utama
+def main():
+    # Jumlah thread yang akan digunakan
+    num_threads = 4
 
-# Menampilkan jumlah wajah yang dilatih dan mengakhiri program
-print("\n [INFO] {0} wajah dilatih. Menutup Program".format(len(np.unique(ids))))
+    # Membagi dataset menjadi bagian-bagian untuk setiap thread
+    dataset_size = 50  # Update this to the actual size of your dataset
+    batch_size = dataset_size // num_threads
+
+    # Mendapatkan data gambar dan label
+    faces, ids = getImagesAndLabels(path)
+
+    # List untuk menyimpan objek thread
+    threads = []
+
+    # Mulai thread pelatihan
+    for i in range(num_threads):
+        start_index = i * batch_size
+        end_index = (i + 1) * batch_size if i != num_threads - 1 else dataset_size
+
+        # Buat thread untuk melatih recognizer dengan bagian dataset tertentu
+        thread = threading.Thread(target=trainRecognizer, args=(start_index, end_index, faces, ids.copy()))
+
+        # Menambahkan thread ke dalam list
+        threads.append(thread)
+
+        # Mulai thread
+        thread.start()
+
+    # Tunggu semua thread selesai sebelum melanjutkan program utama
+    for thread in threads:
+        thread.join()
+
+    # Menyimpan model ke dalam file trainer/trainer.yml
+    recognizer.write('trainer/trainer.yml')
+
+    # Menampilkan jumlah wajah yang dilatih
+    print("\n [INFO] {0} wajah dilatih.".format(len(np.unique(ids))))
+
+    # Menutup program
+    print("Menutup Program")
+
+if __name__ == "__main__":
+    main()

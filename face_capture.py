@@ -36,7 +36,7 @@ while(True):
     k = cv2.waitKey(100) & 0xff
     if k == 27:  # Tekan 'ESC' untuk keluar dari video
         break
-    elif count >= 30:  # Ambil 30 sampel wajah dan hentikan video
+    elif count >= 50:  # Ambil 30 sampel wajah dan hentikan video
         break
 
 # Membersihkan
